@@ -1,26 +1,22 @@
 import streamlit as st
-from typing import Generator
+from typing import Generator, Union
+import pandas as pd
 from groq import Groq
+import json
+from io import BytesIO
+import PyPDF2
 
 st.set_page_config(page_icon="💬", layout="wide",
-                   page_title="Groq Goes Brrrrrrrr...")
-
+                   page_title="Groq Goes Brrrrrr...")
 
 def icon(emoji: str):
     """Shows an emoji as a Notion-style page icon."""
-    st.write(
-        f'<span style="font-size: 78px; line-height: 1">{emoji}</span>',
-        unsafe_allow_html=True,
-    )
-
+    st.write(f'<span style="font-size: 78px; line-height: 1">{emoji}</span>', unsafe_allow_html=True)
 
 icon("🏎️")
-
 st.subheader("Groq Chat Streamlit App", divider="rainbow", anchor=False)
 
-client = Groq(
-    api_key=st.secrets["GROQ_API_KEY"],
-)
+client = Groq(api_key="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")
 
 # Initialize chat history and selected model
 if "messages" not in st.session_state:
@@ -40,7 +36,6 @@ models = {
 
 # Layout for model selection and max_tokens slider
 col1, col2 = st.columns(2)
-
 with col1:
     model_option = st.selectbox(
         "Choose a model:",
@@ -55,18 +50,33 @@ if st.session_state.selected_model != model_option:
     st.session_state.selected_model = model_option
 
 max_tokens_range = models[model_option]["tokens"]
-
 with col2:
-    # Adjust max_tokens slider dynamically based on the selected model
     max_tokens = st.slider(
         "Max Tokens:",
-        min_value=512,  # Minimum value to allow some flexibility
+        min_value=512,
         max_value=max_tokens_range,
-        # Default value or max allowed if less
         value=min(32768, max_tokens_range),
         step=512,
         help=f"Adjust the maximum number of tokens (words) for the model's response. Max for selected model: {max_tokens_range}"
     )
+
+# File upload handling
+st.sidebar.title("Document Upload")
+uploaded_file = st.sidebar.file_uploader("Upload your document", type=['pdf', 'txt', 'json'])
+document_text = ""
+if uploaded_file is not None:
+    if uploaded_file.type == "application/json":
+        # Load JSON and use it as part of the context or for gpt-crawler
+        json_data = json.load(uploaded_file)
+        st.sidebar.write("JSON loaded, ready for processing with GPT-Crawler.")
+    elif uploaded_file.type == "text/plain":
+        # Read text file
+        document_text = str(uploaded_file.read(), 'utf-8')
+    elif uploaded_file.type == "application/pdf":
+        # Read PDF file
+        with BytesIO(uploaded_file.getbuffer()) as f:
+            reader = PyPDF2.PdfReader(f)
+            document_text = "".join([page.extract_text() for page in reader.pages])
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -74,13 +84,18 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
+# Retrieval methods dropdown
+retrieval_method = st.selectbox(
+    "Select retrieval method:",
+    ["Embedding-based", "FAISS", "Elasticsearch", "No retrieval"],
+    index=0
+)
 
 def generate_chat_responses(chat_completion) -> Generator[str, None, None]:
     """Yield chat response content from the Groq API response."""
     for chunk in chat_completion:
         if chunk.choices[0].delta.content:
             yield chunk.choices[0].delta.content
-
 
 if prompt := st.chat_input("Enter your prompt here..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -119,3 +134,4 @@ if prompt := st.chat_input("Enter your prompt here..."):
         combined_response = "\n".join(str(item) for item in full_response)
         st.session_state.messages.append(
             {"role": "assistant", "content": combined_response})
+

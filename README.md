@@ -4,9 +4,9 @@
 
 ![Demo App Screenshot](images/groq_demo.png)
 
-This [Streamlit](https://streamlit.io/) app integrates with the [Groq API](https://groq.com/) to provide a chat interface where users can interact with advanced language models. It allows users to choose between two models for generating responses, enhancing the flexibility and user experience of the chat application.
+This [Streamlit](https://streamlit.io/) app integrates with the [Groq API](https://groq.com/) to provide a chat interface where users can interact with advanced language models like Meta AI's Llama-3. It allows users to choose between two models for generating responses, enhancing the flexibility and user experience of the chat application.
 
-It is blazing FAST; try it and see! 🏎️ 💨 💨 💨
+It is blazing FAST!!!; try it and see! 🏎️ 💨 💨 💨
 
 **Check out the video tutorial 👇**
 
@@ -16,6 +16,7 @@ It is blazing FAST; try it and see! 🏎️ 💨 💨 💨
 
 ## Features
 
+- **NEW! Chat with your data!**: Users can upload their data in a .json file either generated from gpt-crawler or attach PDF files / text files before chatting and click Ingest Data! <a href="https://www.builder.io/blog/custom-gpt">
 - **Model Selection**: Users can select between `mixtral-8x7b-32768`, `llama2-70b-4096`, `Gemma-7b-it`, `llama2-70b-4096`, `llama3-70b-8192`, and `lama3-8b-8192` models to tailor the conversation according to each model's capabilities.
 - **Chat History**: The app maintains a session-based chat history, allowing for a continuous conversation flow during the app session.
 - **Dynamic Response Generation**: Utilizes a generator function to stream responses from the Groq API, providing a seamless chat experience.
